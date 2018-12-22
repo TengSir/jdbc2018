@@ -1,15 +1,16 @@
 package com.oracle.bank.view;
 
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import java.io.FileInputStream;
+import java.sql.*;
+import java.util.Properties;
+import javax.sql.DataSource;
 import javax.swing.*;
 
 public class LoginFrame extends JFrame {
@@ -60,11 +61,17 @@ public class LoginFrame extends JFrame {
 				String accountPass=password.getText();
 				//2.使用jdbc链接数据库查询这个账户名和密码是否存在
 				try{
-					Connection  c= DriverManager.getConnection("jdbc:oracle:thin:@172.19.22.104:1521:XE","test","test");
+					Properties  pros=new Properties();
+					pros.load(new FileInputStream("source/datasourcepool.properties"));
+					DataSource  source=BasicDataSourceFactory.createDataSource(pros);
+					Connection c=source.getConnection();
+
+//					Connection  c= DriverManager.getConnection("jdbc:oracle:thin:@172.19.22.104:1521:XE","test","test");
 					PreparedStatement pre=c.prepareStatement("select * from ACCOUNT where ACCNO=? and ACCPASS=?");
 					pre.setString(1,accountNO);
 					pre.setString(2,accountPass);
 					ResultSet rs=pre.executeQuery();
+					ResultSetMetaData metaData=rs.getMetaData();
 					if(rs.next()){
 
 						Account  a=new Account();
